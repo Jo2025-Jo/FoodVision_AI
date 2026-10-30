@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodVision AI | Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#071329;color:#eef5ff}
+header{padding:20px 6%;display:flex;justify-content:space-between;align-items:center;background:#0c1d3b;border-bottom:1px solid #203b65}
+.brand{font-size:23px;font-weight:bold;color:#63d9ff}
+a{color:#8edfff;text-decoration:none}
+main{max-width:1050px;margin:35px auto;padding:20px}
+.panel{background:#102343;border:1px solid #24456e;border-radius:18px;padding:26px;margin-bottom:22px}
+h1{margin-top:0;font-size:30px}
+p{color:#bacbe4;line-height:1.6}
+.status{padding:12px;border-radius:10px;background:#092f38;color:#7cf5cf;margin:15px 0}
+.error{padding:12px;border-radius:10px;background:#491d2a;color:#ffc0c9;margin:12px 0}
+label{display:block;margin:18px 0 9px}
+input[type=file]{width:100%;padding:15px;background:#071329;border:1px dashed #5685b9;border-radius:10px;color:white}
+button{margin-top:18px;padding:13px 22px;border:0;border-radius:10px;background:linear-gradient(90deg,#167dff,#27d3e8);color:#fff;font-size:16px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+.preview{display:none;margin-top:20px;max-width:100%;max-height:350px;border-radius:12px;border:1px solid #3e6794}
+footer{text-align:center;color:#8298b7;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">🍽 FoodVision AI</div>
+  <a href="{{ url_for('logout') }}">Logout ↗</a>
+</header>
+
+<main>
+  <section class="panel">
+    <h1>Welcome, {{ username }} 👋</h1>
+    <p>Upload a food photo to predict its category and generate a blue Grad-CAM heatmap.</p>
+
+    {% if model_ready %}
+      <div class="status">● AI model loaded and ready for analysis</div>
+    {% else %}
+      <div class="error">
+        AI model is not ready.
+        {% if model_error %}<br>{{ model_error }}{% endif %}
+        <br>Check the models folder and the terminal.
+      </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="error">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" enctype="multipart/form-data">
+      <label for="food_image">Choose a food image</label>
+      <input
+        id="food_image"
+        type="file"
+        name="food_image"
+        accept="image/jpeg,image/png,image/webp,image/bmp"
+        required
+        onchange="previewImage(event)"
+      >
+
+      <img id="preview" class="preview" alt="Selected food preview">
+
+      <br>
+      <button type="submit" {% if not model_ready %}disabled{% endif %}>
+        Analyse Image →
+      </button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>What you will see</h2>
+    <p>✓ Predicted food category and confidence</p>
+    <p>✓ Top-5 model predictions</p>
+    <p>✓ Original uploaded image</p>
+    <p>✓ Blue/cyan Grad-CAM heatmap overlay</p>
+    <p>✓ Brightness, sharpness and edge analysis</p>
+  </section>
+</main>
+
+<footer>FoodVision AI · Educational computer-vision project</footer>
+
+<script>
+function previewImage(event) {
+  const preview = document.getElementById("preview");
+  const file = event.target.files && event.target.files[0];
+
+  if (!file) {
+    preview.style.display = "none";
+    preview.removeAttribute("src");
+    return;
+  }
+
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
+}
+</script>
+</body>
+</html>

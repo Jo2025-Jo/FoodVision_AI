@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodVision AI | Analysis Results</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#071329;color:#eef5ff}
+header{padding:20px 6%;display:flex;justify-content:space-between;background:#0c1d3b;border-bottom:1px solid #203b65}
+.brand{font-size:22px;font-weight:bold;color:#63d9ff}
+a{color:#8edfff;text-decoration:none}
+main{max-width:1150px;margin:30px auto;padding:18px}
+h1{font-size:30px}
+p{color:#bacbe4;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.panel{background:#102343;border:1px solid #24456e;border-radius:18px;padding:22px;margin-bottom:20px;min-width:0}
+.panel img{width:100%;height:auto;max-height:420px;object-fit:contain;background:#061020;border-radius:12px}
+.big{font-size:27px;font-weight:bold;color:#63d9ff}
+.muted{color:#a8bdd9}
+.bar{height:9px;background:#243a59;border-radius:9px;overflow:hidden;margin:8px 0 15px}
+.fill{height:100%;background:linear-gradient(90deg,#168cff,#39e4ee);border-radius:9px}
+.metric{display:inline-block;background:#0a1930;padding:12px;border-radius:10px;margin:5px}
+button{padding:13px 20px;border:0;border-radius:10px;background:linear-gradient(90deg,#167dff,#27d3e8);color:white;font-size:15px;font-weight:bold;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">🍽 FoodVision AI</div>
+  <a href="{{ url_for('logout') }}">Logout ↗</a>
+</header>
+
+<main>
+  <h1>Analysis Results</h1>
+  <p>Welcome, {{ username }}. Results below come from your trained classifier.</p>
+
+  <section class="panel">
+    <div class="muted">Predicted food category</div>
+    <div class="big">{{ predicted_name }}</div>
+    <p>Model confidence: <strong>{{ confidence }}%</strong></p>
+    <div class="bar"><div class="fill" style="width:{{ confidence }}%"></div></div>
+  </section>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Original food image</h2>
+      <img src="{{ url_for('static', filename='uploads/' + image_filename) }}"
+           alt="Uploaded food image">
+    </section>
+
+    <section class="panel">
+      <h2>Blue Grad-CAM heatmap</h2>
+      <img src="{{ url_for('static', filename='heatmaps/' + heatmap_filename) }}"
+           alt="Blue Grad-CAM heatmap overlay">
+      <p>Bright highlighted regions indicate areas that influenced the model's prediction. This is an explanation visualisation, not proof that the prediction is correct.</p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Top-5 predictions</h2>
+    {% for item in top_results %}
+      <p><strong>{{ loop.index }}. {{ item.name }}</strong> — {{ item.confidence }}%</p>
+      <div class="bar"><div class="fill" style="width:{{ item.confidence }}%"></div></div>
+    {% endfor %}
+  </section>
+
+  <section class="panel">
+    <h2>Image analysis</h2>
+    <div class="metric">Brightness<br><strong>{{ brightness }}</strong> / 255</div>
+    <div class="metric">Sharpness<br><strong>{{ sharpness }}</strong></div>
+    <div class="metric">Edge pixels<br><strong>{{ edge_ratio }}%</strong></div>
+    <p class="muted">Brightness is the average grayscale intensity; sharpness is the Laplacian variance; edge pixels are the percentage detected by Canny edge detection.</p>
+  </section>
+
+  <a href="{{ url_for('dashboard') }}"><button>← Analyse another image</button></a>
+</main>
+</body>
+</html>
